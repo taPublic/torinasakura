@@ -1,0 +1,104 @@
+{
+  "@import": "./element.php",
+  "name": "modal_button",
+  "title": "Modal Button",
+  "group": "Atlantis",
+  "icon": "${url:images/icon.svg}",
+  "iconSmall": "${url:images/iconSmall.svg}",
+  "width": 500,
+  "element": true,
+  "templates": {
+    "render": "./templates/template.php"
+  },
+  "placeholder": {
+    "props": {
+      "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+    }
+  },
+  "fields": {
+    "modal_id": {
+      "label": "Modal",
+      "description": "Modal ID",
+      "source": true
+    },
+    "name": "${builder.name}",
+    "source": "${builder.source}",
+    "id": "${builder.id}",
+    "status": "${builder.status}",
+    "class": "${builder.cls}",
+    "attributes": {
+      "label": "Attributes",
+      "source": true,
+      "type": "textarea"
+    },
+    "content": {
+      "label": "Content",
+      "source": true,
+      "type": "textarea"
+    },
+    "button_style": {
+      "label": "Style",
+      "description": "Set the button style.",
+      "type": "select",
+      "options": {
+        "Default": "default",
+        "Primary": "primary",
+        "Secondary": "secondary",
+        "Danger": "danger",
+        "Text": "text",
+        "Link": "",
+        "Link Muted": "link-muted",
+        "Link Text": "link-text"
+      }
+    },
+    "button_size": {
+      "label": "Size",
+      "type": "select",
+      "options": {
+        "Small": "small",
+        "Default": "",
+        "Large": "large"
+      }
+    },
+    "fullwidth": {
+      "type": "checkbox",
+      "text": "Full width button"
+    },
+    "css": {
+      "type": "editor",
+      "label": "CSS",
+      "description": "Enter your own custom CSS. The following selectors will be prefixed automatically for this element: <code>.el-element</code>",
+      "editor": "code",
+      "mode": "css",
+      "attrs": {
+        "debounce": 500
+      }
+    }
+  },
+  "fieldset": {
+    "default": {
+      "type": "tabs",
+      "fields": [
+        {
+          "title": "Content",
+          "fields": [
+            "content",
+            "modal_id"
+          ]
+        },
+        {
+          "title": "Settings",
+          "fields": [
+            {
+              "label": "Button",
+              "type": "group",
+              "divider": true,
+              "fields": ["button_style", "button_size", "fullwidth"]
+            }
+          ]
+        },
+        "${builder.advanced}"
+      ]
+    }
+  }
+}
