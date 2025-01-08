@@ -16,7 +16,7 @@ foreach ($items as $item) {
     $menuitem = "~theme.menu.items.{$item->id}";
 
     // Children
-    $children = isset($item->children);
+    $children = !empty($item->children);
     $indention = str_pad("\n", $level + 1, "\t");
 
     // List item
@@ -56,7 +56,7 @@ foreach ($items as $item) {
         $title = "<div class=\"uk-grid uk-grid-small" . ($level >= 1 && ($config("$menuposition.image_align") == 'center') ? ' uk-flex-middle' : '') . "\"><div class=\"uk-width-auto\">{$image}</div><div class=\"uk-width-expand\">{$title}</div></div>";
     } elseif ($title && $subtitle) {
         $title = "<div>{$title}</div>";
-    } else {
+    } elseif ($image) {
         $title = "{$image} {$title}";
     }
 
@@ -86,26 +86,21 @@ foreach ($items as $item) {
 
         if (isset($item->url)) {
             $link['href'] = $item->url;
-
-            if (str_contains((string) $item->url, '#')) {
-                $link['uk-scroll'] = true;
-            }
-
         }
 
-        if (isset($item->target)) {
+        if (!empty($item->target)) {
             $link['target'] = $item->target;
         }
 
-        if (isset($item->anchor_title)) {
+        if (!empty($item->anchor_title)) {
             $link['title'] = $item->anchor_title;
         }
 
-        if (isset($item->anchor_rel)) {
+        if (!empty($item->anchor_rel)) {
             $link['rel'] = $item->anchor_rel;
         }
 
-        if (isset($item->anchor_css)) {
+        if (!empty($item->anchor_css)) {
             $link['class'][] = $item->anchor_css;
         }
 
@@ -116,13 +111,13 @@ foreach ($items as $item) {
 
         $attrs['class'][] = 'uk-parent';
 
-        $children = ['class' => []];
+        $attrs_children = ['class' => []];
 
         if ($level == 1) {
-            $children['class'][] = 'uk-nav-sub';
+            $attrs_children['class'][] = 'uk-nav-sub';
         }
 
-        $children = "{$indention}<ul{$this->attrs($children)}>\n{$this->self(['items' => $item->children, 'level' => $level + 1])}</ul>";
+        $children = "{$indention}<ul{$this->attrs($attrs_children)}>\n{$this->self(['items' => $item->children, 'level' => $level + 1])}</ul>";
     }
 
     echo "{$indention}<li{$this->attrs($attrs)}>{$title}{$children}</li>";

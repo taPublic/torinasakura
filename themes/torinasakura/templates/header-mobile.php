@@ -1,16 +1,23 @@
 <?php
 
 // Config
-$mobile = '~theme.mobile';
+$site = '~theme.site';
 $header = '~theme.mobile.header';
 $navbar = '~theme.mobile.navbar';
 $dialog = '~theme.mobile.dialog';
+$mobile = '~theme.mobile';
+$navbar_default = '~theme.navbar';
 
 // Options
 $layout = $config("$header.layout");
-$class = ['tm-header-mobile', $config("$mobile.breakpoint") ? "uk-hidden@{$config("$mobile.breakpoint")}" : ''];
-$attrs = ['uk-header' =>  $config("$mobile.header.transparent") ? true : false];
-$attrs_sticky = [];
+
+// Outside
+$outside = $config("$site.layout") == 'boxed' && $config("$site.boxed.header_outside");
+
+// Header
+$attrs = [];
+$attrs['class'][] = 'tm-header-mobile';
+$attrs['class'][] = $config("$mobile.breakpoint") ? "uk-hidden@{$config("$mobile.breakpoint")}" : '';
 
 // Navbar Container
 $attrs_navbar_container = [];
@@ -23,16 +30,33 @@ $attrs_navbar = [
         'uk-navbar',
     ],
 
-    'uk-navbar' => array_filter([
-        'container' => '.tm-header-mobile',
-    ]),
+    'uk-navbar' => [
+        'align' => $config("$navbar_default.dropdown_align"),
+        'container' => $config("$header.transparent") && $config("$header.blend") ? ($outside ? '.tm-page-container' : '.tm-page') : '.tm-header-mobile',
+        'boundary' => '.tm-header-mobile .uk-navbar-container', // By default, it would be the navbar component's element
+        'target-x' => $config("$navbar_default.dropdown_target") ? '.tm-header-mobile .uk-navbar' : null,
+    ],
 
 ];
 
+if ($config("$navbar_default.dropbar")) {
+
+    $attrs_navbar['uk-navbar']['target-y'] = '.tm-header-mobile .uk-navbar-container';
+    $attrs_navbar['uk-navbar']['dropbar'] = true;
+    $attrs_navbar['uk-navbar']['dropbar-anchor'] = $config("$header.transparent") && $config("$header.blend") ? ($outside ? '.tm-page-container > .tm-page' : '.tm-page > main') : '.tm-header-mobile .uk-navbar-container'; // Has to be after navbar container because it has uk-light/dark
+    $attrs_navbar['uk-navbar']['dropbar-transparent-mode'] = $config("$header.transparent") ? 'behind' : 'remove';
+
+}
+
 // Sticky
+$attrs_sticky = [];
 if ($sticky = $config("$navbar.sticky")) {
 
-    $attrs_navbar['uk-navbar']['container'] = '.tm-header-mobile > [uk-sticky]';
+    if ($config("$header.transparent") && $config("$header.blend")) {
+        $attrs_navbar['uk-navbar']['close-on-scroll'] = true;
+    } else {
+        $attrs_navbar['uk-navbar']['container'] = '.tm-header-mobile > [uk-sticky]';
+    }
 
     $attrs_sticky = array_filter([
         'uk-sticky' => true,
@@ -44,7 +68,64 @@ if ($sticky = $config("$navbar.sticky")) {
 
 }
 
-$attrs_navbar['uk-navbar'] = json_encode($attrs_navbar['uk-navbar']);
+$attrs_navbar['uk-navbar'] = json_encode(array_filter($attrs_navbar['uk-navbar']));
+
+// Transparent
+if ($config("$header.transparent")) {
+
+    $attrs_navbar_container['class'][] = 'uk-navbar-transparent';
+
+    if ($config("$header.blend")) {
+        $attrs['class'][] = 'uk-blend-difference uk-position-z-index-high';
+        $attrs_navbar_container['class'][] = 'uk-light';
+    } else {
+        if ($config("$header.transparent_color_separately")) {
+            $attrs['uk-inverse'] = 'target: .uk-navbar-left, .uk-navbar-center, .uk-navbar-right';
+        } else {
+            $attrs['uk-inverse'] = 'target: .uk-navbar-container';
+        }
+        $attrs_navbar_container['class'][] = 'uk-position-relative uk-position-z-index-high';
+    }
+
+} elseif ($config("$site.boxed.header_transparent") || $config('header.section.transparent')) {
+
+    if ($sticky) {
+        $attrs_sticky['cls-inactive'] = 'uk-navbar-transparent';
+        if ($sticky == 1) {
+            $attrs_sticky['animation'] = 'uk-animation-slide-top';
+        }
+    } else {
+        $attrs_navbar_container['class'][] = 'uk-navbar-transparent';
+    }
+
+}
+
+if ($outside) {
+
+    if (!$config("$header.transparent") && $config("$site.boxed.header_transparent")) {
+
+        $attrs['uk-inverse'] = 'target: .uk-navbar-container; sel-active: .uk-navbar-transparent';
+
+        if ($sticky) {
+            $attrs_sticky['top'] = '300';
+        }
+    }
+
+} elseif ($config("$header.transparent") || $config('header.section.transparent')) {
+
+    $attrs['uk-header'] = true;
+    $attrs['class'][] = 'tm-header-overlay';
+
+    if (!$config("$header.transparent")) {
+        $attrs['uk-inverse'] = 'target: .uk-navbar-container; sel-active: .uk-navbar-transparent';
+
+        if ($sticky) {
+            $attrs_sticky['tm-section-start'] = true;
+        }
+
+    }
+
+}
 
 // Width Container
 $attrs_width_container = [];
@@ -54,7 +135,7 @@ $attrs_width_container['class'][] = 'uk-container uk-container-expand';
 
 <?php if (is_active_sidebar('logo-mobile') || is_active_sidebar('navbar-mobile') || is_active_sidebar('header-mobile')) :?>
 
-<div<?= $this->attrs(['class' => $class], $attrs) ?>>
+<header<?= $this->attrs($attrs) ?>>
 
 <?php
 
@@ -125,7 +206,6 @@ if (str_starts_with($layout, 'horizontal')) :
 
 <?php endif ?>
 
-
 <?php
 
 // Dialog
@@ -168,23 +248,41 @@ if (str_starts_with($config("$dialog.layout"), 'dropbar')) {
         $attrs_dropbar['class'][] = 'uk-dropbar-right';
     }
 
-    $attrs_dropbar['uk-drop'] = json_encode(array_filter([
+    $attrs_dropbar['uk-drop'] = [
         // Default
         'clsDrop' => 'uk-dropbar',
         'flip' => 'false', // Has to be a string
-        'container' => '.tm-header-mobile',
+        'container' => $sticky ? '.tm-header-mobile > [uk-sticky]' : '.tm-header-mobile',
         'target-y' => '.tm-header-mobile .uk-navbar-container',
         // New
         'mode' => 'click',
         'target-x' => '.tm-header-mobile .uk-navbar-container',
         'stretch' => true,
-        'pos' => $config("$dialog.dropbar.animation") == 'slide-right' ? 'bottom-right' : null,
+        'pos' => $config("$dialog.dropbar.animation") == 'slide-right' ? "bottom-right" : "bottom-left",
         'bgScroll' => 'false', // Has to be a string
         'animation' => $config("$dialog.dropbar.animation") ?: null,
         'animateOut' => true,
         'duration' => 300,
         'toggle' => 'false', // Has to be a string
-    ]));
+    ];
+
+    // Behind navbar
+    if ($config("$header.transparent")) {
+        $attrs_dropbar['uk-drop']['inset'] = true;
+        $attrs_dropbar['class'][] = 'uk-dropbar-inset';
+        $attrs_dropbar['uk-drop']['pos'] = $config("$dialog.dropbar.animation") == 'slide-right' ? "top-right" : "top-left";
+
+        if ($config("$header.blend")) {
+            $attrs_dropbar['uk-drop']['container'] = $outside ? '.tm-page-container' : '.tm-page';
+        }
+        // Set same z-index as dropnav (high but behind navbar, which is set to high). Needed in two cases: 1. blend and 2. not sticky and outside
+        $attrs_dropbar['style'][] = 'z-index: 980;';
+    }
+
+    $attrs_dropbar['uk-drop'] = json_encode(array_filter($attrs_dropbar['uk-drop']));
+
+    $attrs_dropbar_content = [];
+    $attrs_dropbar_content['class'][] = 'tm-height-min-1-1 uk-flex uk-flex-column';
 
 }
 
@@ -247,7 +345,11 @@ if (str_starts_with($config("$dialog.layout"), 'dropbar')) {
     <?php if (str_starts_with($config("$dialog.layout"), 'dropbar')) : ?>
     <div id="tm-dialog-mobile"<?= $this->attrs($attrs_dropbar) ?>>
 
-        <div class="tm-height-min-1-1 uk-flex uk-flex-column">
+        <div<?= $this->attrs($attrs_dropbar_content) ?>>
+
+            <?php if ($config("$header.transparent")) : ?>
+            <div uk-height-placeholder=".tm-header-mobile .uk-navbar-container"></div>
+            <?php endif ?>
 
             <?php if ((is_active_sidebar('dialog-mobile'))) : ?>
             <div<?= $this->attrs($attrs_dialog) ?>>
@@ -268,7 +370,6 @@ if (str_starts_with($config("$dialog.layout"), 'dropbar')) {
 
 <?php endif ?>
 
-</div>
+</header>
 
 <?php endif ?>
-
