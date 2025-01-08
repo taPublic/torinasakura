@@ -20,7 +20,7 @@ if ($position == 'logo' && preg_match('/^(horizontal|stacked-center-split-[ab])/
 if ($position == 'logo-mobile') {
     $attrs_link['class'][] = 'uk-navbar-item';
 
-    if ($config("$mobile.header.logo_padding_remove") && $config("$header.layout") != 'horizontal-center-logo') {
+    if ($config("$mobile.header.logo_padding_remove") && $config("$mobile.header.layout") != 'horizontal-center-logo') {
         $attrs_link['class'][] = 'uk-padding-remove-left';
     }
 }

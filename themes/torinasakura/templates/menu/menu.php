@@ -8,18 +8,21 @@ use function YOOtheme\app;
 $mobile = '~theme.mobile';
 $header = '~theme.header';
 $dialog = '~theme.dialog';
+$navbar = '~theme.navbar';
 
 // Menu ID
 $attrs['id'] = $config('~menu.tag_id');
 
-$hasHeaderParent = function ($items) {
-    return Arr::some($items, function ($item) {
-        return $item->type == 'heading' && !empty($item->children) && isset($item->url) && ($item->url === '#' || $item->url === '');
-    });
-};
+$hasHeaderParent = fn($items) =>
+    Arr::some($items, fn($item) =>
+        $item->type == 'heading' &&
+        !empty($item->children) &&
+        isset($item->url) &&
+        ($item->url === '#' || $item->url === '')
+    );
 
 // Set `nav` menu_type to default in header positions
-if ($config('~menu.type') == 'nav' && preg_match('/^(toolbar-(left|right)|logo(-mobile)?|navbar(-split|-push|-mobile)?|header(-split|-mobile)?)$/', $config('~menu.position'))) {
+if ($config('~menu.type') == 'nav' && preg_match('/^(toolbar-(left|right)|logo(-mobile)?|navbar(-split|-push|-mobile)?|header(-split|-mobile)?)$/', $config('~menu.position', ''))) {
     $config->set('~menu.type', '');
 }
 
@@ -102,7 +105,8 @@ if ($type == 'nav') {
 
     $attrs['class'][] = 'uk-nav';
     $attrs['class'][] = "uk-nav-{$config('~menu.style')}";
-    $attrs['class'][] =  $config('~menu.divider') ? 'uk-nav-divider' : '';
+    $attrs['class'][] = $config('~menu.style') == 'primary' ? "uk-nav-{$config('~menu.size')}" : '';
+    $attrs['class'][] = $config('~menu.divider') ? 'uk-nav-divider' : '';
 
     // Accordion menu
     if ($hasHeaderParent($items)) {
@@ -149,6 +153,25 @@ if ($type !== 'nav') {
     }
 
     $menuConfig = $config->set('~menu', $menuConfig);
+}
+
+// Dropnav
+if (in_array($type, ['subnav', 'iconnav'])) {
+    $dropnav_attrs = [
+        'boundary' => 'false', // Has to be a string
+        'container' => $config("$navbar.sticky") && in_array($config('~menu.position'), ['navbar', 'navbar-split']) ? '.tm-header > [uk-sticky]' : 'body',
+    ];
+
+    $attrs['uk-dropnav'] = json_encode(array_filter($dropnav_attrs));
+}
+
+// Scrollspy nav
+if (Arr::some($items, fn($item) => str_contains((string) $item->url, '#'))) {
+    $attrs['uk-scrollspy-nav'] = 'closest: li; scroll: true;';
+
+    if ($type !== 'nav') {
+        $attrs['uk-scrollspy-nav'] .= ' target: > * > a[href];';
+    }
 }
 
 ?>

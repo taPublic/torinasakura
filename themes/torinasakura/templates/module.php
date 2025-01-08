@@ -52,7 +52,7 @@ if (in_array($position, ['navbar', 'navbar-push', 'navbar-mobile', 'header-mobil
     }
 
 // No style positions
-} elseif (preg_match('/^(toolbar-(left|right)|logo|header(-split)?|dialog(-push|-mobile(-push)?)?)$/', $position)) {
+} elseif (preg_match('/^(toolbar-(left|right)|logo|header(-split)?|dialog(-mobile)?(-push)?)$/', $position)) {
 
     $class[] = 'uk-panel';
 

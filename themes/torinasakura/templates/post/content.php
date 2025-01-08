@@ -157,7 +157,7 @@ $image = function ($attr) use ($config, $view) {
                     <p class="uk-text-meta tm-page-break <?= ($page == '1') ? 'tm-page-break-first-page' : '' ?>"><?= sprintf(__('Page %s of %s', 'yootheme'), $page, $numpages) ?></p>
                 <?php endif ?>
 
-                <?php if (is_numeric($config('~theme.post.content_length')) && $config('~theme.post.content_length') >= 0) : ?>
+                <?php if (!post_password_required($post) && (int) $config('~theme.post.content_length') > 0) : ?>
                     <?= Str::limit(strip_tags($content), $config('~theme.post.content_length'), '...', false) ?>
                 <?php else : ?>
                     <?= $content ?>
@@ -187,14 +187,16 @@ $image = function ($attr) use ($config, $view) {
         <?php endif ?>
 
         <?php if (is_single() && $config('~theme.post.navigation')) : ?>
-        <ul class="uk-pagination uk-margin-medium">
-            <?php if ($prev = get_previous_post_link('%link', sprintf(__('%1$s Previous', 'yootheme'), '<span uk-pagination-previous></span>'))) : ?>
-            <li><?= $prev ?></li>
-            <?php endif ?>
-            <?php if ($next = get_next_post_link('%link', sprintf(__('Next %1$s', 'yootheme'), '<span uk-pagination-next></span>'))) : ?>
-            <li class="uk-margin-auto-left"><?= $next ?></li>
-            <?php endif ?>
-        </ul>
+        <nav class="uk-margin-medium">
+            <ul class="uk-pagination uk-margin-remove-bottom">
+                <?php if ($prev = get_previous_post_link('%link', strtr(__('&laquo; Previous'), ['&laquo;' => '<span uk-pagination-previous></span>']))) : ?>
+                <li><?= $prev ?></li>
+                <?php endif ?>
+                <?php if ($next = get_next_post_link('%link', strtr(__('Next &raquo;'), ['&raquo;' => '<span uk-pagination-next></span>']))) : ?>
+                <li class="uk-margin-auto-left"><?= $next ?></li>
+                <?php endif ?>
+            </ul>
+        </nav>
         <?php endif ?>
 
         <?php if (is_single() && get_the_author_meta('description')) : ?>

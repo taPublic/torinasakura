@@ -1,6 +1,6 @@
 <?php
 
-$items = array_filter($items, function ($item) { return !empty(trim($item->content ?? '')); });
+$items = array_filter($items, fn($item) => !empty(trim($item->content ?? '')));
 
 $render = function ($items, $wrap = null) use ($view, $name) {
     $output = [];
@@ -61,7 +61,7 @@ if ($style == 'section') {
 
     foreach ($items as $item) {
 
-        if (!empty($item->type) && in_array($item->type, ['yootheme_builder', 'builderwidget'])) {
+        if (in_array($item->type ?? '', ['yootheme_builder', 'builderwidget'])) {
 
             if ($section) {
                 echo $view('~theme/templates/section', ['name' => $name, 'items' => $section]);
@@ -82,6 +82,11 @@ if ($style == 'section') {
 }
 
 // Grid
+if (count($items) < 2) {
+    echo $render($items);
+    return;
+}
+
 $grid = $position ?? $config("~theme.{$name}", []);
 $visibilities = ['xs', 's', 'm', 'l', 'xl'];
 $visible = 4;
